@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
 import { loginSchema } from "@/lib/zod/auth.schema";
-import { login } from "@/actions/actions";
+import { login } from "@/action/actions";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {

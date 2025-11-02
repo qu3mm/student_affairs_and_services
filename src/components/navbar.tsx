@@ -46,9 +46,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ustp_logo from "../../public/images/USTP_LOGO.png";
 import Image from "next/image";
 import { logoutUser } from "@/lib/logout";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useUser } from "@/components/hook/useUser";
 
 interface MenuItem {
   title: string;
@@ -151,6 +150,7 @@ const Navbar = ({
   },
 }: Navbar1Props) => {
   const router = useRouter();
+  const { user, loading } = useUser();
 
   const handleLogout = async () => {
     try {
@@ -159,8 +159,6 @@ const Navbar = ({
       console.error("Logout error:", error);
     }
   };
-
-  const session = null; // Replace with actual session retrieval logic
 
   return (
     <section className="py-4">
@@ -191,7 +189,7 @@ const Navbar = ({
 
           {/* Auth Buttons - Right */}
           <div className="flex gap-2 items-center ml-auto">
-            {session ? (
+            {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -200,23 +198,23 @@ const Navbar = ({
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={session.email || ""}
-                        alt={session.name || "User"}
+                        src={user.user_metadata?.avatar_url || ""}
+                        alt={user.email || "User"}
                       />
                       <AvatarFallback>
-                        {session.user.name ? (
-                          session.user.name.substring(0, 2).toUpperCase()
+                        {user.name ? (
+                          user.name.substring(0, 2).toUpperCase()
                         ) : (
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {session.user.name || session.user.email}
+                      {user.name || user.email}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-55">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => router.push("/profile")}>
