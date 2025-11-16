@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { loginSchema } from "@/lib/zod/auth.schema";
 import { signUpSchema } from "@/lib/zod/auth.schema";
-import { email, z } from "zod";
+import { z } from "zod";
 
 export async function login(values: z.infer<typeof loginSchema>) {
   const supabase = await createClient();
@@ -29,6 +29,8 @@ export async function login(values: z.infer<typeof loginSchema>) {
       message: error.message,
     };
   }
+
+  
 
   //   revalidatePath("/", "layout");
   //   redirect("/");
@@ -60,7 +62,7 @@ export async function signUp(values: z.infer<typeof signUpSchema>) {
     },
   };
   const { error } = await supabase.auth.signUp(data);
-  if (error) {
+  if (error) {  
     return {
       status: "error",
       message: error.message,

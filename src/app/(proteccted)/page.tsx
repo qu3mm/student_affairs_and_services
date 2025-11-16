@@ -1,8 +1,8 @@
+import { AboutUs } from "@/components/about-us";
 import Hero from "@/components/hero";
-import { Navbar } from "@/components/navbar";
+import { ServicesSection } from "@/components/services";
 
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -13,8 +13,10 @@ export default async function Home() {
   return (
     <>
       <div className="mx-5 ">
-        <Navbar />
+        
         <Hero />
+        <ServicesSection />
+        
       </div>
     </>
   );

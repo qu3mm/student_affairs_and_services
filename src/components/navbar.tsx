@@ -1,12 +1,9 @@
 "use client";
 import {
   Book,
-  CalendarCheck,
-  History,
   LogOut,
   Menu,
   Sunset,
-  Timer,
   Trees,
   User,
   Zap,
@@ -79,7 +76,7 @@ interface Navbar1Props {
 
 const Navbar = ({
   menu = [
-    { title: "Home", url: "#" },
+    { title: "Home", url: "/" },
     {
       title: "Services",
       url: "#",
@@ -111,30 +108,31 @@ const Navbar = ({
         },
       ],
     },
-    {
-      title: "Events",
-      url: "#",
-      items: [
-        {
-          title: "Upcoming Events",
-          description: "Don't miss our future events and activities",
-          icon: <CalendarCheck className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Ongoing Events",
-          description: "Stay updated with events happening now",
-          icon: <Timer className="size-5 shrink-0" />,
-          url: "#",
-        },
-        {
-          title: "Past Events",
-          description: "Explore our previous events and highlights",
-          icon: <History className="size-5 shrink-0" />,
-          url: "#",
-        },
-      ],
-    },
+    { title: "Events", url: "/events" },
+    // {
+    //   title: "Events",
+    //   url: "/events",
+    //   items: [
+    //     {
+    //       title: "Upcoming Events",
+    //       description: "Don't miss our future events and activities",
+    //       icon: <CalendarCheck className="size-5 shrink-0" />,
+    //       url: "/events",
+    //     },
+    //     {
+    //       title: "Ongoing Events",
+    //       description: "Stay updated with events happening now",
+    //       icon: <Timer className="size-5 shrink-0" />,
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Past Events",
+    //       description: "Explore our previous events and highlights",
+    //       icon: <History className="size-5 shrink-0" />,
+    //       url: "#",
+    //     },
+    //   ],
+    // },
     {
       title: "Organizations",
       url: "#",
@@ -202,15 +200,15 @@ const Navbar = ({
                         alt={user.email || "User"}
                       />
                       <AvatarFallback>
-                        {user.name ? (
-                          user.name.substring(0, 2).toUpperCase()
+                        {user.user_metadata?.first_name ? (
+                          user.user_metadata.first_name.substring(0, 2).toUpperCase()
                         ) : (
                           <User className="h-4 w-4" />
                         )}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">
-                      {user.name || user.email}
+                      {user.user_metadata?.first_name || user.email}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -248,7 +246,7 @@ const Navbar = ({
         <div className="block lg:hidden">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <a href={"/"} className="flex items-center gap-2">
+            <a href={"/"} className="flex items-center gap-2 ml-2">
               <Image
                 src={ustp_logo.src}
                 className="max-h-8 dark:invert"
