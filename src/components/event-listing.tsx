@@ -11,25 +11,19 @@ import { Calendar, Clock, MapPin, Search, Filter } from "lucide-react";
 import { formatDate, getCategoryColor, type Event } from "@/lib/events";
 import { Separator } from "@/components/ui/separator";
 
-type EventWithImage = Event & { image_url?: string };
+type EventWithImage = Event & { image_url?: string } & { category: { name: string } };
 
-export default function EventListingClient({
-  events,
-}: {
-  events: EventWithImage[];
-}) {
+export default function EventListingClient({events,}: {events: EventWithImage[]; }) {
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [timeframe, setTimeframe] = useState<
-    "All" | "Upcoming" | "Ongoing" | "Past"
-  >("All");
+  const [timeframe, setTimeframe] = useState<"All" | "Upcoming" | "Ongoing" | "Past">("All");
 
   console.log("Rendering EventListingClient with events:", events);
 
-  // Dynamically generate categories from events data
+  // Dynamically generate categories from events d ata
   const uniqueCategories = Array.from(
-    new Set(events.map((event) => event.category).filter(Boolean))
-  ).sort() as string[];
+    new Set(events.map((event) => event.category.name).filter(Boolean))).sort() as string[];
 
   const categories = ["All", ...uniqueCategories];
 
@@ -51,8 +45,8 @@ export default function EventListingClient({
     // Case-insensitive category matching
     const categoryMatch =
       selectedCategory === "All" ||
-      (event.category &&
-        event.category.toLowerCase() === selectedCategory.toLowerCase());
+      (event.category?.name &&
+        event.category.name.toLowerCase() === selectedCategory.toLowerCase());
 
     // Search matching
     const searchMatch =
@@ -77,7 +71,7 @@ export default function EventListingClient({
       {/* Search + Filter */}
 
       <section className=" bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-2 py-15">
           <div className="space-y-4">
             {/* Search Bar */}
             <div className="relative">
@@ -87,7 +81,7 @@ export default function EventListingClient({
                 placeholder="Search events..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-11 h-12 text-base shadow-sm"
+                className="pl-11 h-12 text-base "
               />
             </div>
 
@@ -106,7 +100,7 @@ export default function EventListingClient({
                       variant={selectedCategory === cat ? "default" : "outline"}
                       size="sm"
                       onClick={() => setSelectedCategory(cat)}
-                      className="text-sm font-medium"
+                      className="text-sm font-medium rounded-full"
                     >
                       {cat}
                     </Button>
@@ -136,7 +130,7 @@ export default function EventListingClient({
                           tf as "All" | "Upcoming" | "Ongoing" | "Past"
                         )
                       }
-                      className="text-sm font-medium"
+                      className="text-sm font-medium rounded-full"
                     >
                       {tf}
                     </Button>
@@ -150,7 +144,7 @@ export default function EventListingClient({
 
 
       {/* Events Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-2 py-12">
         {/* Header Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-2">
@@ -182,9 +176,9 @@ export default function EventListingClient({
                 {/* Category Badge Overlay */}
                 <div className="absolute top-3 left-3">
                   <Badge
-                    className={`${getCategoryColor(event.category)} shadow-md`}
+                    className={`${getCategoryColor(event.category.name)} shadow-md`}
                   >
-                    {event.category}
+                    {event.category.name}
                   </Badge>
                 </div>
               </div>
@@ -206,7 +200,7 @@ export default function EventListingClient({
                   {/* Event Details */}
                   <div className="space-y-2.5 pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2.5 text-sm">
-                      <Calendar className="h-4 w-4 text-primary shrink-0" />
+                      <Calendar className="h-4 w-4 text-primary shrink-0 " />
                       <span className="text-foreground/80">
                         {formatDate(event.date)}
                       </span>

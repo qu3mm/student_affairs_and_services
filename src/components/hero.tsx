@@ -4,7 +4,7 @@ const Hero = () => {
   return (
     <div className="min-h-screen w-full flex flex-col gap-16 items-center justify-center px-6 py-16">
       <div className="text-center max-w-3xl">
-        <h1 className="mt-10 text-3xl sm:text-5xl md:text-6xl lg:text-7xl md:leading-[1.2] font-semibold tracking-tighter">
+        <h1 className="mt-10 text-3xl sm:text-5xl md:text-6xl  lg:text-7xl md:leading-[1.2] font-semibold tracking-tighter">
           Empowering Students Through Connected Campus Services
         </h1>
         <p className="mt-6 md:text-lg">

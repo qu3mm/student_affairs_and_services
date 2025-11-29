@@ -1,13 +1,5 @@
 "use client";
-import {
-  Book,
-  LogOut,
-  Menu,
-  Sunset,
-  Trees,
-  User,
-  Zap,
-} from "lucide-react";
+import { Book, LogOut, Menu, Sunset, Trees, User, Zap } from "lucide-react";
 
 import {
   Accordion,
@@ -44,7 +36,7 @@ import ustp_logo from "../../public/images/USTP_LOGO.png";
 import Image from "next/image";
 import { logoutUser } from "@/lib/logout";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/components/hook/useUser";
+import ProfileDropdown from "./admin/dropdown-profile";
 
 interface MenuItem {
   title: string;
@@ -53,6 +45,8 @@ interface MenuItem {
   icon?: React.ReactNode;
   items?: MenuItem[];
 }
+
+
 
 interface Navbar1Props {
   logo?: {
@@ -72,6 +66,7 @@ interface Navbar1Props {
       url: string;
     };
   };
+  session?: any;
 }
 
 const Navbar = ({
@@ -146,13 +141,17 @@ const Navbar = ({
     login: { title: "Login", url: "/login" },
     signup: { title: "Sign up", url: "/sign-up" },
   },
+  session,
 }: Navbar1Props) => {
-  const router = useRouter();
-  const { user, loading } = useUser();
+  const user = session?.user;
+  const loading = !session;
 
+
+   const router = useRouter();
   const handleLogout = async () => {
     try {
       await logoutUser();
+      router.refresh();
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -189,45 +188,17 @@ const Navbar = ({
           <div className="flex gap-2 items-center ml-auto">
             {!loading && user ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 h-auto py-2"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={user.user_metadata?.avatar_url || ""}
-                        alt={user.email || "User"}
-                      />
-                      <AvatarFallback>
-                        {user.user_metadata?.first_name ? (
-                          user.user_metadata.first_name.substring(0, 2).toUpperCase()
-                        ) : (
-                          <User className="h-4 w-4" />
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">
-                      {user.user_metadata?.first_name || user.email}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-55">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/settings")}>
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                <ProfileDropdown
+                  user={user}
+                  trigger={
+                    <Button variant="ghost" size="icon" className="size-9.5">
+                      <Avatar className="size-9.5 rounded-md">
+                        <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
+                        <AvatarFallback></AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  }
+                />
               </DropdownMenu>
             ) : (
               <div className="flex gap-2 items-center ml-auto">
@@ -283,15 +254,26 @@ const Navbar = ({
                   >
                     {menu.map((item) => renderMobileMenuItem(item))}
                   </Accordion>
-
-                  <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.title}</a>
-                    </Button>
-                    <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.title}</a>
-                    </Button>
-                  </div>
+                  {!loading && user ? (
+                    <DropdownMenu>
+                      <Button
+                        onClick={handleLogout}
+                        variant="destructive"
+                        className="p-0"
+                      >
+                        <span>Logout</span>
+                      </Button>
+                    </DropdownMenu>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      <Button asChild variant="outline">
+                        <a href={auth.login.url}>{auth.login.title}</a>
+                      </Button>
+                      <Button asChild>
+                        <a href={auth.signup.url}>{auth.signup.title}</a>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

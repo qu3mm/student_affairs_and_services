@@ -75,3 +75,46 @@ export function buildGoogleCalendarUrl(event: Partial<Event> & { date: string; t
     return "https://www.google.com/calendar";
   }
 }
+
+export function getEventDateRange(event: Partial<Event> & { date: string }) {
+  try {
+    const dateBase = new Date(event.date as string);
+
+    let start: Date | null = null;
+    let end: Date | null = null;
+
+    if (event.time && event.time.includes("-")) {
+      const [s, e] = event.time.split("-").map((p) => p.trim());
+      const ps = parseTimeString(s);
+      const pe = parseTimeString(e);
+      if (ps) {
+        start = new Date(dateBase);
+        start.setHours(ps.hour, ps.minutes, 0, 0);
+      }
+      if (pe) {
+        end = new Date(dateBase);
+        end.setHours(pe.hour, pe.minutes, 0, 0);
+      }
+    } else if (event.time) {
+      const ps = parseTimeString(event.time);
+      if (ps) {
+        start = new Date(dateBase);
+        start.setHours(ps.hour, ps.minutes, 0, 0);
+        end = new Date(start.getTime() + 60 * 60 * 1000);
+      }
+    }
+
+    if (!start) {
+      start = new Date(dateBase);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    }
+    if (!end) {
+      end = new Date(start.getTime() + 60 * 60 * 1000);
+    }
+
+    return { start, end };
+  } catch {
+    return { start: null, end: null };
+  }
+}

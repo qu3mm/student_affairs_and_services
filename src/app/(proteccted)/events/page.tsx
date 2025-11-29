@@ -7,7 +7,9 @@ export default async function EventListingPage() {
 
   const { data: eventsRaw, error } = await supabase
     .from("tbl_events")
-    .select("*");
+    .select(
+      "id, title, description, date, time, location, image_filename, requirements, category:tbl_events_category(name)"
+    );
 
   if (error) {
     console.error("Error fetching events:", error);
@@ -17,103 +19,51 @@ export default async function EventListingPage() {
       </div>
     );
   }
-  // Helper: try to find an image public URL for an event.
-  // Uses either `img_id` (UUID) or `image_filename` fields if present.
-  const tryResolveImageUrl = async (ev: Record<string, unknown>) => {
-    const imgId = (ev as { img_id?: string }).img_id;
-    const imageFilename = (ev as { image_filename?: string }).image_filename;
 
+  // Optimized image URL resolver - uses public URLs directly without expensive HEAD checks
+  const resolveImageUrl = (ev: Record<string, unknown>): string | null => {
+    const imageFilename = (ev as { image_filename?: string }).image_filename;
     const bucket = "events_image";
 
-    // function that checks public URL availability via HEAD
-    const checkUrl = async (url?: string | null) => {
-      if (!url) return false;
-      try {
-        const res = await fetch(url, { method: "HEAD" });
-        return res.ok;
-      } catch {
-        return false;
-      }
-    };
-
-    // 1) If image_filename provided, try it first. Prefer signed URL (works for private buckets),
-    // then fallback to public URL.
+    // Primary: Use image_filename if available (most common case)
     if (imageFilename) {
-      try {
-        // createSignedUrl returns { data: { signedUrl } }
-        const { data: signedData, error: signedErr } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(imageFilename as string, 60 * 60); // 1 hour
-        if (!signedErr && signedData?.signedUrl) {
-          if (await checkUrl(signedData.signedUrl)) return signedData.signedUrl;
-        }
-      } catch {
-        // ignore signed url errors
-      }
-
-      // fallback to public url
-      const { data: pub } = supabase.storage
+      const { data } = supabase.storage
         .from(bucket)
-        .getPublicUrl(imageFilename as string);
-      if (pub?.publicUrl) {
-        if (await checkUrl(pub.publicUrl)) return pub.publicUrl;
-      }
+        .getPublicUrl(imageFilename);
+      return data?.publicUrl || null;
     }
 
-    // 2) If imgId exists (legacy) — try listing and extensions (kept for backward compatibility)
+    // Legacy: Try img_id with common extensions (no HEAD checks for performance)
+    const imgId = (ev as { img_id?: string }).img_id;
     if (imgId) {
-      try {
-        const { data: listData, error: listErr } = await supabase.storage
+      const extensions = [".jpg", ".jpeg", ".png", ".webp"];
+      for (const ext of extensions) {
+        const { data } = supabase.storage
           .from(bucket)
-          .list("", { search: imgId as string, limit: 100 });
-
-        if (!listErr && Array.isArray(listData) && listData.length > 0) {
-          const exact = listData.find(
-            (o) => o.name === imgId || o.name.startsWith(`${imgId}.`)
-          );
-          const pick = exact ? exact.name : listData[0].name;
-          const { data } = supabase.storage.from(bucket).getPublicUrl(pick);
-          if (data?.publicUrl && (await checkUrl(data.publicUrl)))
-            return data.publicUrl;
-        }
-      } catch {
-        // ignore listing errors and fall back to candidate names
-      }
-
-      const exts = [".jpg", ".jpeg", ".png", ".webp", ""]; // try with and without extension
-      for (const ext of exts) {
-        const candidate = `${imgId}${ext}`;
-        const { data } = supabase.storage.from(bucket).getPublicUrl(candidate);
-        if (data?.publicUrl && (await checkUrl(data.publicUrl)))
-          return data.publicUrl;
+          .getPublicUrl(`${imgId}${ext}`);
+        if (data?.publicUrl) return data.publicUrl;
       }
     }
 
-    // 4) nothing found
     return null;
   };
 
   const events = (eventsRaw || []) as Record<string, unknown>[];
 
-  const eventsWithImages = await Promise.all(
-    events.map(async (ev) => {
-      const image_url = await tryResolveImageUrl(ev);
-      return { ...ev, image_url };
-    })
+  // Resolve all image URLs synchronously (no async needed for getPublicUrl)
+  const eventsWithImages = events.map((ev) => {
+    const imageUrl = resolveImageUrl(ev);
+    return {
+      ...ev,
+      image_url: imageUrl ?? undefined, // Convert null to undefined
+    };
+  });
+
+  return (
+    <EventListingClient
+      events={eventsWithImages as unknown as Array<
+        Event & { image_url?: string; category: { name: string } }
+      >}
+    />
   );
-
-  // Debug: log first few resolved items (only id/img fields and image_url)
-  try {
-    const debug = eventsWithImages.slice(0, 8).map((e) => ({
-      id: (e as Record<string, unknown>).id,
-      img_id: (e as Record<string, unknown>).img_id,
-      image_filename: (e as Record<string, unknown>).image_filename,
-      image_url: (e as Record<string, unknown>).image_url,
-    }));
-    console.log("eventsWithImages (first items):", debug);
-  } catch {
-    // ignore logging errors
-  }
-
-  return <EventListingClient events={eventsWithImages as unknown as Event[]} />;
 }

@@ -9,6 +9,8 @@ export async function login(values: z.infer<typeof loginSchema>) {
   const supabase = await createClient();
 
   const result = loginSchema.safeParse(values);
+  console.log(result);
+
   if (!result.success) {
     return {
       status: "error",
@@ -22,15 +24,13 @@ export async function login(values: z.infer<typeof loginSchema>) {
   };
 
   const { error } = await supabase.auth.signInWithPassword(data);
-
+  console.log(error);
   if (error) {
     return {
       status: "error",
       message: error.message,
     };
   }
-
-  
 
   //   revalidatePath("/", "layout");
   //   redirect("/");
@@ -62,7 +62,7 @@ export async function signUp(values: z.infer<typeof signUpSchema>) {
     },
   };
   const { error } = await supabase.auth.signUp(data);
-  if (error) {  
+  if (error) {
     return {
       status: "error",
       message: error.message,

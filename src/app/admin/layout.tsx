@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "../globals.css";
-import { Navbar } from "@/components/navbar";
 import { ReactNode } from "react";
-import { createClient } from "@/utils/supabase/server";
+import { AdminSideBar } from "@/components/admin/side-bar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const poppins = Poppins({
   weight: ["400", "600", "700"],
@@ -19,18 +19,19 @@ export const metadata: Metadata = {
 export default async function studentLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  //  if (!data?.user) {
-  //   redirect("/login");
-  // }
-
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-main antialiased`}>
-        <Navbar session={data} />
-        {children}
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full">
+            <AdminSideBar />
+            <div className="flex flex-1 flex-col bg-muted/20">
+              <main className="flex-1 p-3">{children}</main>
+            </div>
+          </div>
+        </SidebarProvider>
       </body>
     </html>
   );
 }
+  

@@ -28,7 +28,7 @@ export default function Loading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <Card
               key={i}
-              className="overflow-hidden rounded-xl border border-border shadow-sm"
+              className="overflow-hidden rounded-xl border border-border shadow-sm pt-0"
             >
               {/* Image placeholder */}
               <div className="aspect-video bg-muted w-full" />
